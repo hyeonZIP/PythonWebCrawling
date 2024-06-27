@@ -29,25 +29,74 @@ time.sleep(5)
 
 soup = BeautifulSoup(result_html, 'html.parser')
 
-
+a = 1
 # 1분류를 선택하는 칸을 가리킴
 field_LV1s = soup.select('#content > div.section_instie_area.space_top > div > div.section.insite_inquiry > div > div > div:nth-child(1) > div > div:nth-child(1) > ul > li')
-print(field_LV1s)
-a = 1
 for field_LV1 in field_LV1s:
-    print(field_LV1.text)
+    print("1분류 : ",field_LV1.text)
     # 1분류 칸을 선택해서 드롭다운
     dr.find_element(By.XPATH, '//*[@id="content"]/div[2]/div/div[1]/div/div/div[1]/div/div[1]/span').click()
-    time.sleep(1)
+    time.sleep(2)
     # 순차적으로 드롭다운 옵션을 차례대로 클릭함 > 해당 클릭을 통해 2분류가 동적으로 업데이트 됨 > 따라서 새롭게 크롤링을 해줘야 함
     dr.find_element(By.XPATH, f'//*[@id="content"]/div[2]/div/div[1]/div/div/div[1]/div/div[1]/ul/li[{a}]/a').click()
-    # 새롭게 크롤링
-    result_html = dr.page_source
-    print(result_html)
-    time.sleep(10)
-
     a += 1
-    time.sleep(1)
+    time.sleep(2) # 너무 빨리 넘어가서 time sleep 으로 해결
+    # 크롤링 부분@@@@
+    result_html = dr.page_source
+    soup = BeautifulSoup(result_html, 'html.parser')
+
+    b = 1
+    field_LV2s = soup.select('#content > div.section_instie_area.space_top > div > div.section.insite_inquiry > div > div > div:nth-child(1) > div > div:nth-child(2) > ul > li')
+    for field_LV2 in field_LV2s:
+        print("2분류 : ", field_LV2.text)
+        dr.find_element(By.XPATH, '//*[@id="content"]/div[2]/div/div[1]/div/div/div[1]/div/div[2]/span').click()
+        time.sleep(2)
+        dr.find_element(By.XPATH, f'//*[@id="content"]/div[2]/div/div[1]/div/div/div[1]/div/div[2]/ul/li[{b}]/a').click()
+        b += 1
+        time.sleep(2)
+
+        # 크롤링 부분@@@@
+        result_html = dr.page_source
+        soup = BeautifulSoup(result_html, 'html.parser')
+
+        c = 1
+        try:
+            field_LV3s = soup.select('#content > div.section_instie_area.space_top > div > div.section.insite_inquiry > div > div > div:nth-child(1) > div > div:nth-child(3) > ul > li')
+            for field_LV3 in field_LV3s:
+                print("3분류 : ", field_LV3.text)
+                dr.find_element(By.XPATH, '//*[@id="content"]/div[2]/div/div[1]/div/div/div[1]/div/div[3]/span').click()
+                time.sleep(2)
+                dr.find_element(By.XPATH, f'//*[@id="content"]/div[2]/div/div[1]/div/div/div[1]/div/div[3]/ul/li[{c}]/a').click()
+                c += 1
+                time.sleep(2)
+
+                # 크롤링 부분@@@@
+                result_html = dr.page_source
+                soup = BeautifulSoup(result_html, 'html.parser')
+                d = 1
+                try:
+                    print("4분류 검사 시작")
+                    field_LV4s = soup.select('#content > div.section_instie_area.space_top > div > div.section.insite_inquiry > div > div > div:nth-child(1) > div > div:nth-child(4) > ul > li')
+                    for field_LV4 in field_LV4s:
+                        print("4분류 : ", field_LV4.text)
+                        dr.find_element(By.XPATH, '#content > div.section_instie_area.space_top > div > div.section.insite_inquiry > div > div > div:nth-child(1) > div > div:nth-child(4) > ul > li').click()
+                        time.sleep(2)
+                        dr.find_element(By.XPATH, f'//*[@id="content"]/div[2]/div/div[1]/div/div/div[1]/div/div[4]/ul/li[{d}]/a').click()
+                        d += 1
+                        time.sleep(2)
+
+                        # 240627 4단계 까지 선택하는 곳 까지 함
+                except:
+                    print("4분류가 존재하지 않음")
+                    continue
+        except :
+            print("3분류가 존재하지 않음")
+            continue
+
+
+
+    time.sleep(5)
+    print("@@@@@@@@@@@@@@@@@@@@@@@@@")
 
 
 # test = db.DB()
