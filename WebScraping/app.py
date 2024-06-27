@@ -84,8 +84,9 @@ for field_LV1 in field_LV1s:
                         dr.find_element(By.XPATH, f'//*[@id="content"]/div[2]/div/div[1]/div/div/div[1]/div/div[4]/ul/li[{d}]/a').click()
                         d += 1
                         time.sleep(2)
+                        dr.find_element(By.XPATH, '//*[@id="content"]/div[2]/div/div[1]/div/a').click()
+                        # 240627 4단계 까지 선택하고 조회 버튼 까지 클릭
 
-                        # 240627 4단계 까지 선택하는 곳 까지 함
                 except:
                     print("4분류가 존재하지 않음")
                     continue
