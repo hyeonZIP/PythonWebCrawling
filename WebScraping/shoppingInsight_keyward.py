@@ -27,11 +27,11 @@ for row in result:
             c = c[:len(c)-1]+c[-1].replace(' ', '')
         categories.append(c)
 
-
-dr = webdriver.Chrome()  # C드라이브 windows 폴더에 드라이버 파일을 넣어두면 파일주소 지정을 안해줘도 됨
+options = webdriver.ChromeOptions()
+options.add_argument('--headless')
+dr = webdriver.Chrome(options=options)  # C드라이브 windows 폴더에 드라이버 파일을 넣어두면 파일주소 지정을 안해줘도 됨
 wait = WebDriverWait(dr, 5)
 dr.get('https://datalab.naver.com/shoppingInsight/sKeyword.naver')
-dr.fullscreen_window()
 result_html = dr.page_source
 act = ActionChains(dr)
 soup = BeautifulSoup(result_html, 'html.parser')
@@ -85,7 +85,7 @@ for i in range(len(keywords)):
                     wait.until(EC.element_to_be_clickable((By.XPATH, f'//*[@id="content"]/div[2]/div/div[1]/div/div/div[1]/div/div[{j+1}]/ul/*/a[text()="{category[j]}"]'))).click()
                     break
                 except:
-                    print("재시도 중 : ", 9-attempt , "/ 10")
+                    print("분야 입력 재시도 중 : ", 9-attempt , "/ 10")
                     if attempt == 9:
                         raise
                     time.sleep(2)
@@ -106,7 +106,7 @@ for i in range(len(keywords)):
                 wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="content"]/div[2]/div/div[1]/div/a'))).click()
                 break
             except:
-                print("재시도 중 : ", 9-attempt , "/ 10")
+                print("키워드 입력 재시도 중 : ", 9-attempt , "/ 10")
                 if attempt == 9:
                     raise
                 time.sleep(1)
@@ -145,14 +145,18 @@ for i in range(len(keywords)):
                 print("총 클릭 수 : ",total)
                 if total >= 100:
                     print("DB저장")
-                    for i in range(12):
+                    for j in range(12):
                         # print(keyword, start_year, monthDb[i], click[i])
-                        test.insert(keyword, start_year,monthDb[i], click[i])
+                        try:
+                            test.insert(keyword, start_year,monthDb[j], click[j])
+                        except Exception as e:
+                            print(e)
+
                 else:
                     print("저장하지 않음")
                 break
             except:
-                print("재시도 중 : ", 9-attempt , "/ 10")
+                print("그래프 탐색 재시도 중 : ", 9-attempt , "/ 10")
                 if attempt == 9:
                     raise
                 time.sleep(2)
@@ -165,3 +169,14 @@ for i in range(len(keywords)):
 
     # 삭제
     wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="content"]/div[2]/div/div[1]/div/div/div[2]/div/div/div[1]/a'))).click()
+
+quit(400)
+
+# 240702 임재현 현재 문제 상황
+# 1. 데이터 정제
+# 2. 카테고리 불규칙, 공백 단위로 카테고리를 구분하다보니 하나의 카테고리에 공백에 들어가있을 경우 두개의 카테고리로 인식
+#   구분 규칙을 공백이 아닌 다른 기호로 대체 콤마 혹은 언더바
+#   ex) [애완용품] > [고양이 사료] ==> [애완용품] > [고양이] > [사료]
+# 3. 존재하지 않는 카테고리 존재 ex) [스포츠/레저] > [스포츠액세서리] 존재하지 않음
+# 4. 데이터에 불필요한 공백 제거, 카테고리 혹은 키워드에 공백에 들어가있음
+# (빅사이즈)(하복)진그레이교복 에서 마무리

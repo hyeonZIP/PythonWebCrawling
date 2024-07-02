@@ -21,21 +21,22 @@ class DB:
         # 카테고리가 공백인 행 제거
         cursor.execute("SELECT iki_keyword, iki_category "
                        "FROM sellit_shop_item_keyword_info "
-                       "WHERE iki_category != '' "
-                       "LIMIT 500")
+                       "WHERE iki_category != '' ")
         return cursor.fetchall()
 
     def insert(self, keyword, year, month, click):
         cursor = self.connection.cursor()
 
-        cursor.execute("INSERT INTO "
-                       "sellit_shop_item_keyword_trend "
-                       "VALUES(%s,%s,%s,%d)",keyword, year,month,click)
-        return cursor.fetchall()
-
-    def save(self, sql):
-        #INSERT INTO sellit_shop_keyword_trend VALUES ()
-        print("MySQL save 작업 " + sql)
+        cursor.execute("INSERT INTO sellit_shop_item_keyword_trend "
+                       "(iki_keyword, ikt_year, ikt_month, ikt_click) "
+                       "VALUES (%s,%s,%s,%s)",(keyword,year,month,click))
+        try:
+            self.connection.commit()
+            return 400
+        except Exception as e:
+            print(e)
+            print("insert문 오류")
+            return 100
 
 # # 접속된 데이터베이스에서 쿼리 실행
 # cursor = connection.cursor()
