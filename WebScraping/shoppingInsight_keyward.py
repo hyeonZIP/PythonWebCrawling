@@ -23,6 +23,7 @@ for row in result:
     if k != '':
         keywords.append(k)
         c = row[1]
+        # 카테고리 마지막에 공백 있을 시 마지막 공백만 제거
         if c and c[-1] == ' ':
             c = c[:len(c)-1]+c[-1].replace(' ', '')
         categories.append(c)
@@ -66,11 +67,19 @@ wait.until(EC.element_to_be_clickable((By.XPATH, f'//*[@id="content"]/div[2]/div
 
 # print(soup)
 for i in range(len(keywords)):
-    temp = categories[i].split(' ')
-    if len(temp) > 4:
-        category = temp[:3] + [' '.join(temp[3:])]
+
+    #구분자 탐색
+    spliter = categories[i].find('>')
+    if(spliter != -1):
+        category = categories[i].split('>')
     else:
-        category = temp
+        category = categories[i].split(' ')
+
+    # temp = categories[i].split(' ')
+    # if len(temp) > 4:
+    #     category = temp[:3] + [' '.join(temp[3:])]
+    # else:
+    #     category = temp
     keyword = keywords[i]
 
     print(category)

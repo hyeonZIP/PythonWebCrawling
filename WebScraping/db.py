@@ -21,7 +21,8 @@ class DB:
         # 카테고리가 공백인 행 제거
         cursor.execute("SELECT iki_keyword, iki_category "
                        "FROM sellit_shop_item_keyword_info "
-                       "WHERE iki_category != '' ")
+                       "WHERE iki_category != '' "
+                       "LIMIT 1500 OFFSET 2202")
         return cursor.fetchall()
 
     def insert(self, keyword, year, month, click):
