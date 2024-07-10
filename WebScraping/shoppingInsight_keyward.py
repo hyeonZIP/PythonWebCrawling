@@ -9,17 +9,16 @@ from selenium.webdriver import ActionChains  # 액션체인 활성화(여러 개
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+total_count = 0
 test = db.DB()
 result = test.select()
-
 keywords = []
 categories = []
 
 for row in result:
     #DB에 공백이 있을 경우 SELECT 할 때 '\xa0' 이 출력됨
     # 공백 -(대쉬) ,(쉼표) .(온점) ･(모바일 ･) `(아래따옴표) '(따옴표)
-    k = (row[0].replace('\xa0', '').replace('-','').replace(',','').replace('.','').replace('･','').replace('`','').replace("'",'').replace("-T",'').replace("T",'')
-         .replace("-TJ",'').replace("-T",'').replace(",,",'').replace("!",'').replace("T2",'').replace("TJ",'').replace("T1",'')).replace('"','').replace("/",'').replace("_",'')
+    k = row[0]
     if k != '':
         keywords.append(k)
         c = row[1]
@@ -37,16 +36,13 @@ result_html = dr.page_source
 act = ActionChains(dr)
 soup = BeautifulSoup(result_html, 'html.parser')
 
-
-
-# 240701 임재현 기간 설정
-# 내년이 되면 연도의 위치가 바뀜으로 원하는 연도에 따라 html 코드가 바뀌도록 변경
-
+# 최대 연속된 12개월 데이터 검색 가능 ex) 2023 06 ~ 2024 07
+# 안되는 범위 ex) 1월 5월 7월 검색 X / 2023 01 ~ 2024 12 X / 한 키워드로 조회를 2번해야하는 경우 전부 불가능
 start_year = '2023'
 start_month = '01'
 end_year = '2023'
 end_month = '12'
-pattern = r'\b\d{2}'#나중에 필요없어지면 지우기
+# monthDb는 데이터베이스에 저장할 때 문자로 넣어야함으로 야매?로 지정
 monthDb = ['01','02','03','04','05','06','07','08','09','10','11','12']
 
 # 기간 > 월간
@@ -75,11 +71,6 @@ for i in range(len(keywords)):
     else:
         category = categories[i].split(' ')
 
-    # temp = categories[i].split(' ')
-    # if len(temp) > 4:
-    #     category = temp[:3] + [' '.join(temp[3:])]
-    # else:
-    #     category = temp
     keyword = keywords[i]
 
     print(category)
@@ -96,7 +87,7 @@ for i in range(len(keywords)):
                 except:
                     print("분야 입력 재시도 중 : ", 9-attempt , "/ 10")
                     if attempt == 9:
-                        raise
+                        raise e
                     time.sleep(2)
     except Exception as e:
         print(e)
@@ -117,7 +108,7 @@ for i in range(len(keywords)):
             except:
                 print("키워드 입력 재시도 중 : ", 9-attempt , "/ 10")
                 if attempt == 9:
-                    raise
+                    raise e
                 time.sleep(1)
                 keywordDeleteBtn = dr.find_elements(By.XPATH, '//*[@id="content"]/div[2]/div/div[1]/div/div/div[2]/div/div/div[1]/a')
                 if keywordDeleteBtn:
@@ -144,14 +135,13 @@ for i in range(len(keywords)):
                     graph_date = wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="chart1"]/div/div/div[1]/span')))
                     graph_value = wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="chart1"]/div/div/div[2]/span[3]')))
                     if graph_date.text == '' or graph_value.text == '':
-                        raise
+                        raise e
                     else:
-                        month = re.findall(pattern, graph_date.text)
                         total += int(graph_value.text)
                         click.append(int(graph_value.text))
-                        print("연도:", start_year , "월:", month[0], "클릭수:", graph_value.text)
+                        # print("연도:", start_year , "월:", month[0], "클릭수:", graph_value.text)
                         # test.insert(start_year, graph_date.text, graph_value.text)
-                print("총 클릭 수 : ",total)
+                # print("총 클릭 수 : ",total)
                 if total >= 100:
                     print("DB저장")
                     for j in range(12):
@@ -163,11 +153,13 @@ for i in range(len(keywords)):
 
                 else:
                     print("저장하지 않음")
+                total_count += 1
+                print("case : ", total_count)
                 break
             except:
                 print("그래프 탐색 재시도 중 : ", 9-attempt , "/ 10")
                 if attempt == 9:
-                    raise
+                    raise e
                 time.sleep(2)
     except Exception as e:
         print(e)
@@ -180,12 +172,3 @@ for i in range(len(keywords)):
     wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="content"]/div[2]/div/div[1]/div/div/div[2]/div/div/div[1]/a'))).click()
 
 quit(400)
-
-# 240702 임재현 현재 문제 상황
-# 1. 데이터 정제
-# 2. 카테고리 불규칙, 공백 단위로 카테고리를 구분하다보니 하나의 카테고리에 공백에 들어가있을 경우 두개의 카테고리로 인식
-#   구분 규칙을 공백이 아닌 다른 기호로 대체 콤마 혹은 언더바
-#   ex) [애완용품] > [고양이 사료] ==> [애완용품] > [고양이] > [사료]
-# 3. 존재하지 않는 카테고리 존재 ex) [스포츠/레저] > [스포츠액세서리] 존재하지 않음
-# 4. 데이터에 불필요한 공백 제거, 카테고리 혹은 키워드에 공백에 들어가있음
-# (빅사이즈)(하복)진그레이교복 에서 마무리
